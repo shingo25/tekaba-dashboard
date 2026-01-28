@@ -25,12 +25,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
+    <html lang="ja" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-[#0d1117]`}
       >
         <Header />
-        <main className="flex-1 container py-6">{children}</main>
+        <main className="flex-1 container mx-auto px-4 py-4 md:py-6 max-w-7xl">{children}</main>
         <Footer />
       </body>
     </html>

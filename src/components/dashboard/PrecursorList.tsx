@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -15,17 +16,21 @@ interface PrecursorListProps {
   onSelectSymbol?: (symbol: string) => void;
 }
 
+const MAX_DISPLAY = 5;
+
 export function PrecursorList({ data, isLoading, onSelectSymbol }: PrecursorListProps) {
+  const [showAll, setShowAll] = useState(false);
+
   if (isLoading) {
     return (
-      <Card>
+      <Card className="card-shadow border-[#30363d] bg-[#161b22]">
         <CardHeader>
-          <CardTitle>前兆検出中</CardTitle>
-          <CardDescription>シグナル条件に近づいている銘柄</CardDescription>
+          <CardTitle className="text-[#e6edf3]">前兆検出中</CardTitle>
+          <CardDescription className="text-[#8b949e]">シグナル条件に近づいている銘柄</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
-            <div className="animate-pulse text-muted-foreground">
+            <div className="animate-pulse text-[#8b949e]">
               読み込み中...
             </div>
           </div>
@@ -36,13 +41,13 @@ export function PrecursorList({ data, isLoading, onSelectSymbol }: PrecursorList
 
   if (data.length === 0) {
     return (
-      <Card>
+      <Card className="card-shadow border-[#30363d] bg-[#161b22]">
         <CardHeader>
-          <CardTitle>前兆検出中</CardTitle>
-          <CardDescription>シグナル条件に近づいている銘柄</CardDescription>
+          <CardTitle className="text-[#e6edf3]">前兆検出中</CardTitle>
+          <CardDescription className="text-[#8b949e]">シグナル条件に近づいている銘柄</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-8 text-muted-foreground">
+          <div className="flex items-center justify-center py-8 text-[#8b949e]">
             現在、前兆シグナルはありません
           </div>
         </CardContent>
@@ -50,32 +55,35 @@ export function PrecursorList({ data, isLoading, onSelectSymbol }: PrecursorList
     );
   }
 
+  const displayedData = showAll ? data : data.slice(0, MAX_DISPLAY);
+  const hasMore = data.length > MAX_DISPLAY;
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>前兆検出中</CardTitle>
-        <CardDescription>
+    <Card className="card-shadow border-[#30363d] bg-[#161b22]">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-[#e6edf3]">前兆検出中</CardTitle>
+        <CardDescription className="text-[#8b949e]">
           シグナル条件に近づいている銘柄 ({data.length}件)
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
-          {data.map((item) => (
+        <div className={`space-y-2 ${showAll ? "max-h-[400px] overflow-y-auto pr-2" : ""}`}>
+          {displayedData.map((item) => (
             <div
               key={item.symbol}
-              className="rounded-lg border p-3 hover:bg-muted/50 cursor-pointer transition-colors"
+              className="rounded-lg border border-[#30363d] bg-[#0d1117] p-3 hover:bg-[#21262d] cursor-pointer transition-colors"
               onClick={() => onSelectSymbol?.(item.symbol)}
             >
               {/* ヘッダー */}
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-yellow-500">👀</span>
-                  <span className="font-semibold">{item.symbol}</span>
+                  <span className="text-[#f0883e]">👀</span>
+                  <span className="font-semibold text-[#e6edf3]">{item.symbol}</span>
                   <span
                     className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                       item.direction === "LONG"
-                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                        : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                        ? "badge-long"
+                        : "badge-short"
                     }`}
                   >
                     {item.direction}
@@ -83,75 +91,63 @@ export function PrecursorList({ data, isLoading, onSelectSymbol }: PrecursorList
                 </div>
               </div>
 
-              {/* 条件状況 */}
-              <div className="space-y-1 text-sm">
+              {/* 条件状況（コンパクト表示） */}
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
                 {/* FR条件 */}
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">FR:</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono">
-                      {(item.conditions.fr_current * 100).toFixed(3)}%
+                <div className="flex items-center gap-1">
+                  <span className="text-[#8b949e]">FR:</span>
+                  <span className="font-mono text-[#e6edf3]">
+                    {(item.conditions.fr_current * 100).toFixed(3)}%
+                  </span>
+                  {item.conditions.fr_ok ? (
+                    <span className="text-[#3fb950]">✓</span>
+                  ) : (
+                    <span className="text-[#f0883e]">
+                      →{(item.conditions.fr_required * 100).toFixed(3)}%
                     </span>
-                    {item.conditions.fr_ok ? (
-                      <span className="text-green-600">✅</span>
-                    ) : (
-                      <span className="text-yellow-600">
-                        → 要{(item.conditions.fr_required * 100).toFixed(3)}%
-                      </span>
-                    )}
-                  </div>
+                  )}
                 </div>
 
                 {/* 乖離条件 */}
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">乖離:</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono">
-                      {item.conditions.divergence_current.toFixed(2)}%
-                    </span>
-                    {item.conditions.divergence_ok ? (
-                      <span className="text-green-600">✅</span>
-                    ) : (
-                      <span className="text-yellow-600">⏳</span>
-                    )}
-                  </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-[#8b949e]">乖離:</span>
+                  <span className="font-mono text-[#e6edf3]">
+                    {item.conditions.divergence_current.toFixed(2)}%
+                  </span>
+                  {item.conditions.divergence_ok ? (
+                    <span className="text-[#3fb950]">✓</span>
+                  ) : (
+                    <span className="text-[#f0883e]">⏳</span>
+                  )}
                 </div>
 
                 {/* OI条件 */}
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">OI変化:</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono">
-                      {item.conditions.oi_change_pct >= 0 ? "+" : ""}
-                      {item.conditions.oi_change_pct.toFixed(2)}%
-                    </span>
-                    {item.conditions.oi_ok ? (
-                      <span className="text-green-600">✅</span>
-                    ) : (
-                      <span className="text-yellow-600">⏳</span>
-                    )}
-                  </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-[#8b949e]">OI:</span>
+                  <span className="font-mono text-[#e6edf3]">
+                    {item.conditions.oi_change_pct >= 0 ? "+" : ""}
+                    {item.conditions.oi_change_pct.toFixed(2)}%
+                  </span>
+                  {item.conditions.oi_ok ? (
+                    <span className="text-[#3fb950]">✓</span>
+                  ) : (
+                    <span className="text-[#f0883e]">⏳</span>
+                  )}
                 </div>
               </div>
-
-              {/* 不足条件 */}
-              {item.missing.length > 0 && (
-                <div className="mt-2 pt-2 border-t">
-                  <div className="flex flex-wrap gap-1">
-                    {item.missing.map((condition, idx) => (
-                      <span
-                        key={idx}
-                        className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                      >
-                        ⏳ {condition}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           ))}
         </div>
+
+        {/* もっと見るボタン */}
+        {hasMore && (
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="mt-3 text-sm text-[#58a6ff] hover:underline"
+          >
+            {showAll ? "折りたたむ" : `他 ${data.length - MAX_DISPLAY} 件を表示`}
+          </button>
+        )}
       </CardContent>
     </Card>
   );

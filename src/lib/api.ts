@@ -12,9 +12,11 @@ export interface SymbolData {
   divergence_pct: number;
   oi_change_pct: number;
   price: number;
+  spot_source?: string;  // Spot価格取得元（Binance, Bybit等）
   status: "normal" | "precursor" | "signal";
   signal_direction?: string;
   signal_pattern?: string;
+  signal_type?: "weak_signal" | "watch_signal" | "signal";  // 出来高ベースのシグナル種別
 }
 
 export interface Top50Response {

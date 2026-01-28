@@ -82,37 +82,37 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #0d1117;
+  --foreground: #e6edf3;
+  --card: #161b22;
+  --card-foreground: #e6edf3;
+  --popover: #1c2128;
+  --popover-foreground: #e6edf3;
+  --primary: #58a6ff;
+  --primary-foreground: #0d1117;
+  --secondary: #21262d;
+  --secondary-foreground: #e6edf3;
+  --muted: #21262d;
+  --muted-foreground: #8b949e;
+  --accent: #21262d;
+  --accent-foreground: #e6edf3;
+  --destructive: #f85149;
+  --border: #30363d;
+  --input: #30363d;
+  --ring: #58a6ff;
+  --chart-1: #22c55e;
+  --chart-2: #ef4444;
+  --chart-3: #eab308;
+  --chart-4: #3b82f6;
+  --chart-5: #8b5cf6;
+  --sidebar: #161b22;
+  --sidebar-foreground: #e6edf3;
+  --sidebar-primary: #58a6ff;
+  --sidebar-primary-foreground: #0d1117;
+  --sidebar-accent: #21262d;
+  --sidebar-accent-foreground: #e6edf3;
+  --sidebar-border: #30363d;
+  --sidebar-ring: #58a6ff;
 }
 
 @layer base {
@@ -121,5 +121,64 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Trading UI Styles */
+@layer components {
+  /* テーブル行のホバー効果 */
+  .table-row-hover {
+    @apply hover:bg-[#21262d] transition-colors cursor-pointer;
+  }
+
+  /* 交互行の背景色 */
+  .table-row-stripe:nth-child(even) {
+    @apply bg-[#161b22];
+  }
+
+  /* 上昇色（緑） */
+  .text-bullish {
+    @apply text-[#22c55e];
+  }
+
+  /* 下落色（赤） */
+  .text-bearish {
+    @apply text-[#ef4444];
+  }
+
+  /* 警告色（黄） */
+  .text-warning {
+    @apply text-[#eab308];
+  }
+
+  /* 監視色（オレンジ） */
+  .text-watch {
+    @apply text-[#f97316];
+  }
+
+  /* カードのシャドウ */
+  .card-shadow {
+    @apply shadow-lg shadow-black/20;
+  }
+
+  /* バッジスタイル */
+  .badge-long {
+    @apply bg-[#22c55e]/20 text-[#22c55e] border border-[#22c55e]/30;
+  }
+
+  .badge-short {
+    @apply bg-[#ef4444]/20 text-[#ef4444] border border-[#ef4444]/30;
+  }
+
+  .badge-weak {
+    @apply bg-[#eab308]/20 text-[#eab308] border border-[#eab308]/30;
+  }
+
+  .badge-watch {
+    @apply bg-[#f97316]/20 text-[#f97316] border border-[#f97316]/30;
+  }
+
+  .badge-precursor {
+    @apply bg-[#3b82f6]/20 text-[#3b82f6] border border-[#3b82f6]/30;
   }
 }
