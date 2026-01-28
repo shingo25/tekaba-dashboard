@@ -149,7 +149,7 @@ export function Top50Table({ data, isLoading, onSelectSymbol }: Top50TableProps)
                     }`}
                   >
                     {item.fr_pct >= 0 ? "+" : ""}
-                    {(item.fr_pct * 100).toFixed(3)}%
+                    {item.fr_pct.toFixed(3)}%
                   </td>
                   <td
                     className={`py-2 px-2 text-right font-mono hidden md:table-cell ${
