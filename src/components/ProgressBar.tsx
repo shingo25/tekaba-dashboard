@@ -138,18 +138,6 @@ export function ProgressBar({
           TP2
         </span>
       </div>
-
-      {/* 現在値表示 */}
-      <div className="mt-2 text-center">
-        <span
-          className={`text-sm font-mono font-medium ${
-            currentPnlPct >= 0 ? "text-green-600" : "text-red-600"
-          }`}
-        >
-          {currentPnlPct >= 0 ? "+" : ""}
-          {currentPnlPct.toFixed(2)}%
-        </span>
-      </div>
     </div>
   );
 }
