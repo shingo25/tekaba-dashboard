@@ -31,6 +31,31 @@ const SPOT_SOURCE_SHORT: Record<string, string> = {
   "Bingx": "BgX",
 };
 
+// 順位変動の表示コンポーネント
+function RankChange({ change }: { change: number | null }) {
+  if (change === null || change === 0) {
+    return <span className="text-[#484f58] ml-1">—</span>;
+  }
+  if (change > 0) {
+    return <span className="text-[#3fb950] ml-1">▲{change}</span>;
+  }
+  return <span className="text-[#f85149] ml-1">▼{Math.abs(change)}</span>;
+}
+
+// 出来高変化の表示コンポーネント
+function VolumeChange({ pct }: { pct: number | null }) {
+  if (pct === null) {
+    return <span className="text-[#484f58] text-xs ml-1">—</span>;
+  }
+  const color = pct >= 0 ? "text-[#3fb950]" : "text-[#f85149]";
+  const sign = pct >= 0 ? "+" : "";
+  return (
+    <span className={`${color} text-xs ml-1`}>
+      {sign}{pct.toFixed(1)}%
+    </span>
+  );
+}
+
 export function Top50Table({ data, isLoading, onSelectSymbol }: Top50TableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showPrecursorsOnly, setShowPrecursorsOnly] = useState(false);
@@ -166,16 +191,18 @@ export function Top50Table({ data, isLoading, onSelectSymbol }: Top50TableProps)
                   }`}
                   onClick={() => onSelectSymbol?.(item.symbol)}
                 >
-                  <td className="py-2 px-3 text-[#484f58] font-mono text-xs">
+                  <td className="py-2 px-3 text-[#484f58] font-mono text-xs whitespace-nowrap">
                     {item.rank}
+                    <RankChange change={item.rank_change} />
                   </td>
                   <td className="py-2 px-2">
                     <span className="font-medium text-[#e6edf3]">
                       {item.symbol}
                     </span>
                   </td>
-                  <td className="py-2 px-2 text-right font-mono text-[#8b949e] hidden sm:table-cell">
+                  <td className="py-2 px-2 text-right font-mono text-[#8b949e] hidden sm:table-cell whitespace-nowrap">
                     {item.volume_24h_display}
+                    <VolumeChange pct={item.volume_change_pct} />
                   </td>
                   <td className="py-2 px-2 text-right font-mono text-[#e6edf3]">
                     ${item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}

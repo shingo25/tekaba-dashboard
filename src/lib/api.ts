@@ -8,6 +8,8 @@ export interface SymbolData {
   symbol: string;
   volume_24h: number;
   volume_24h_display: string;
+  rank_change: number | null;      // 順位変動（正=上昇、負=下降）
+  volume_change_pct: number | null; // 出来高変化率（%）
   fr_pct: number;
   divergence_pct: number;
   oi_change_pct: number;
