@@ -7,14 +7,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ProgressBar } from "@/components/ProgressBar";
 import type { Position } from "@/lib/api";
 
 interface PositionCardProps {
   positions: Position[];
   isLoading?: boolean;
+  onSelectSymbol?: (symbol: string) => void;
 }
 
-export function PositionCard({ positions, isLoading }: PositionCardProps) {
+export function PositionCard({ positions, isLoading, onSelectSymbol }: PositionCardProps) {
   if (isLoading) {
     return (
       <Card>
@@ -59,76 +61,136 @@ export function PositionCard({ positions, isLoading }: PositionCardProps) {
         <div className="space-y-4">
           {positions.map((position) => (
             <div
-              key={`${position.symbol}-${position.entry_time}`}
+              key={position.id}
               className="rounded-lg border p-4"
             >
-              <div className="flex items-center justify-between mb-2">
+              {/* ヘッダー部分 */}
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold">{position.symbol}</span>
+                  <button
+                    onClick={() => onSelectSymbol?.(position.symbol)}
+                    className="font-semibold text-lg hover:text-primary transition-colors"
+                  >
+                    {position.symbol}
+                  </button>
                   <span
                     className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                      position.side === "LONG"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
+                      position.direction === "LONG"
+                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                        : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                     }`}
                   >
-                    {position.side}
+                    {position.direction}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {position.pattern}
                   </span>
                 </div>
-                <div
-                  className={`text-lg font-bold ${
-                    position.pnl >= 0 ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {position.pnl >= 0 ? "+" : ""}
-                  {position.pnl.toFixed(2)} USDT ({position.pnl_percent >= 0 ? "+" : ""}
-                  {position.pnl_percent.toFixed(2)}%)
+                <div className="text-right">
+                  <div
+                    className={`text-lg font-bold ${
+                      position.current_pnl_pct >= 0 ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {position.current_pnl_pct >= 0 ? "+" : ""}
+                    {position.current_pnl_pct.toFixed(2)}%
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    残り {(position.current_size * 100).toFixed(0)}%
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+
+              {/* プログレスバー */}
+              <div className="mb-4">
+                <ProgressBar
+                  currentPnlPct={position.current_pnl_pct}
+                  slPct={position.sl_pct}
+                  tp1Pct={position.tp1_trigger_pct}
+                  tp2Pct={position.tp2_trigger_pct}
+                  trailingPct={position.trailing_trigger_pct}
+                  tp1Hit={position.tp1_hit}
+                  tp2Hit={position.tp2_hit}
+                  trailingActivated={position.trailing_activated}
+                />
+              </div>
+
+              {/* 価格情報 */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm mb-3">
                 <div>
-                  <span className="text-muted-foreground">エントリー:</span>
+                  <span className="text-muted-foreground">Entry:</span>
                   <span className="ml-1 font-mono">
                     ${position.entry_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
                   </span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">現在価格:</span>
+                  <span className="text-muted-foreground">現在:</span>
                   <span className="ml-1 font-mono">
                     ${position.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
                   </span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">数量:</span>
-                  <span className="ml-1 font-mono">{position.quantity}</span>
+                  <span className="text-red-600">SL:</span>
+                  <span className="ml-1 font-mono">
+                    ${position.sl_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">ステータス:</span>
-                  <span className="ml-1">{position.status}</span>
+                  <span className="text-muted-foreground">最大利益:</span>
+                  <span className="ml-1 font-mono text-green-600">
+                    +{position.max_profit_pct.toFixed(2)}%
+                  </span>
                 </div>
               </div>
-              {(position.sl_price || position.tp_price) && (
-                <div className="mt-2 flex gap-4 text-sm">
-                  {position.sl_price && (
-                    <div>
-                      <span className="text-red-600">SL:</span>
-                      <span className="ml-1 font-mono">
-                        ${position.sl_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
-                      </span>
-                    </div>
-                  )}
-                  {position.tp_price && (
-                    <div>
-                      <span className="text-green-600">TP:</span>
-                      <span className="ml-1 font-mono">
-                        ${position.tp_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
-                      </span>
-                    </div>
+
+              {/* TP状況 */}
+              <div className="flex flex-wrap gap-3 text-sm mb-3">
+                <div className="flex items-center gap-1">
+                  <span className={position.tp1_hit ? "text-green-600" : "text-muted-foreground"}>
+                    TP1 (+{position.tp1_trigger_pct}%):
+                  </span>
+                  {position.tp1_hit ? (
+                    <span className="text-green-600">✅ {position.realized_pnl_tp1.toFixed(2)}%</span>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      ⏳ あと{(position.tp1_trigger_pct - position.current_pnl_pct).toFixed(2)}%
+                    </span>
                   )}
                 </div>
-              )}
-              <div className="mt-2 text-xs text-muted-foreground">
-                エントリー時刻: {new Date(position.entry_time).toLocaleString("ja-JP")}
+                <div className="flex items-center gap-1">
+                  <span className={position.tp2_hit ? "text-green-600" : "text-muted-foreground"}>
+                    TP2 (+{position.tp2_trigger_pct}%):
+                  </span>
+                  {position.tp2_hit ? (
+                    <span className="text-green-600">✅ {position.realized_pnl_tp2.toFixed(2)}%</span>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      ⏳ あと{(position.tp2_trigger_pct - position.current_pnl_pct).toFixed(2)}%
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className={position.trailing_activated ? "text-blue-600" : "text-muted-foreground"}>
+                    TR ({position.trailing_stop_pct}%幅):
+                  </span>
+                  {position.trailing_activated ? (
+                    <span className="text-blue-600">🔄 発動中</span>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      ⏳ {position.trailing_trigger_pct}%で発動
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* フッター */}
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>
+                  エントリー: {new Date(position.entry_time).toLocaleString("ja-JP")}
+                </span>
+                <span>
+                  {position.duration_minutes}分経過
+                </span>
               </div>
             </div>
           ))}

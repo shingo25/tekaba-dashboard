@@ -1,76 +1,183 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+// ===========================================
+// TOP50 データ
+// ===========================================
 export interface SymbolData {
+  rank: number;
   symbol: string;
-  funding_rate: number;
-  price: number;
   volume_24h: number;
-  price_change_24h: number;
-  open_interest: number;
-  oi_change_1h: number;
-  volatility: number;
-  score: number;
-  precursor_flags: string[];
+  volume_24h_display: string;
+  fr_pct: number;
+  divergence_pct: number;
+  oi_change_pct: number;
+  price: number;
+  status: "normal" | "precursor" | "signal";
+  signal_direction?: string;
+  signal_pattern?: string;
 }
 
-export interface Position {
+export interface Top50Response {
+  updated_at: string;
+  data: SymbolData[];
+}
+
+// ===========================================
+// 前兆検出
+// ===========================================
+export interface ConditionDetail {
+  fr_ok: boolean;
+  fr_current: number;
+  fr_required: number;
+  fr_remaining: number;
+  divergence_ok: boolean;
+  divergence_current: number;
+  oi_ok: boolean;
+  oi_change_pct: number;
+}
+
+export interface PrecursorData {
   symbol: string;
-  side: string;
+  detected_at: string;
+  conditions: ConditionDetail;
+  direction: string;
+  missing: string[];
+}
+
+export interface PrecursorsResponse {
+  count: number;
+  data: PrecursorData[];
+}
+
+// ===========================================
+// ポジション
+// ===========================================
+export interface Position {
+  id: string;
+  symbol: string;
+  direction: string;
+  pattern: string;
+  status: string;
   entry_price: number;
   current_price: number;
-  quantity: number;
-  pnl: number;
-  pnl_percent: number;
+  current_pnl_pct: number;
+  sl_price: number;
+  sl_pct: number;
+  tp1_trigger_pct: number;
+  tp1_hit: boolean;
+  tp1_price: number | null;
+  tp1_time: string | null;
+  tp2_trigger_pct: number;
+  tp2_hit: boolean;
+  tp2_price: number | null;
+  tp2_time: string | null;
+  trailing_trigger_pct: number;
+  trailing_activated: boolean;
+  trailing_stop_pct: number;
+  max_profit_pct: number;
+  initial_size: number;
+  current_size: number;
+  realized_pnl_tp1: number;
+  realized_pnl_tp2: number;
+  unrealized_pnl: number;
   entry_time: string;
-  sl_price: number | null;
-  tp_price: number | null;
-  status: string;
+  duration_minutes: number;
 }
 
+export interface PositionsResponse {
+  count: number;
+  data: Position[];
+}
+
+// ===========================================
+// シグナル履歴
+// ===========================================
 export interface Signal {
   id: number;
-  timestamp: string;
   symbol: string;
-  signal_type: string;
-  details: string;
-  entry_price: number | null;
-}
-
-export interface ClosedPosition {
-  id: number;
-  symbol: string;
-  side: string;
+  direction: string;
+  pattern: string;
   entry_price: number;
-  exit_price: number;
-  quantity: number;
-  pnl: number;
-  pnl_percent: number;
-  entry_time: string;
-  exit_time: string;
-  exit_reason: string;
+  sl_price: number;
+  fr_at_signal: number | null;
+  div_at_signal: number | null;
+  oi_change: number | null;
+  created_at: string;
 }
 
-export interface DailyStats {
-  date: string;
-  total_signals: number;
-  total_trades: number;
-  winning_trades: number;
-  losing_trades: number;
+export interface SignalsResponse {
+  total: number;
+  limit: number;
+  offset: number;
+  data: Signal[];
+}
+
+// ===========================================
+// 決済済みポジション
+// ===========================================
+export interface ClosedPosition {
+  id: string;
+  symbol: string;
+  direction: string;
+  pattern: string;
+  entry_price: number;
+  exit_price: number | null;
+  exit_reason: string | null;
   total_pnl: number;
+  entry_time: string;
+  exit_time: string | null;
+  duration_minutes: number;
+}
+
+export interface ClosedPositionsResponse {
+  total: number;
+  limit: number;
+  offset: number;
+  data: ClosedPosition[];
+}
+
+// ===========================================
+// 統計
+// ===========================================
+export interface StatsSummary {
+  total_trades: number;
+  wins: number;
+  losses: number;
   win_rate: number;
+  total_pnl: number;
+  avg_pnl: number;
+  max_win: number;
+  max_loss: number;
+  avg_duration_minutes: number;
+}
+
+export interface PatternStats {
+  trades: number;
+  wins: number;
+  win_rate: number;
+  total_pnl: number;
+}
+
+export interface DailyData {
+  date: string;
+  trades: number;
+  pnl: number;
 }
 
 export interface StatsResponse {
-  daily_stats: DailyStats[];
-  summary: {
-    total_trades: number;
-    winning_trades: number;
-    losing_trades: number;
-    total_pnl: number;
-    win_rate: number;
-  };
+  period: string;
+  start_date: string;
+  end_date: string;
+  summary: StatsSummary;
+  by_pattern: Record<string, PatternStats>;
+  by_direction: Record<string, PatternStats>;
+  by_exit_reason: Record<string, number>;
+  daily: DailyData[];
 }
 
+// ===========================================
+// APIクライアント関数
+// ===========================================
 async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
   const apiKey = process.env.DASHBOARD_API_KEY;
 
@@ -93,30 +200,30 @@ async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
   return response.json();
 }
 
-export async function getHealth(): Promise<{ status: string; version: string }> {
+export async function getHealth(): Promise<{ status: string; version: string; uptime_seconds: number }> {
   return fetchWithAuth("/api/health");
 }
 
-export async function getTop50(): Promise<SymbolData[]> {
+export async function getTop50(): Promise<Top50Response> {
   return fetchWithAuth("/api/top50");
 }
 
-export async function getPositions(): Promise<Position[]> {
+export async function getPositions(): Promise<PositionsResponse> {
   return fetchWithAuth("/api/positions");
 }
 
-export async function getPrecursors(): Promise<SymbolData[]> {
+export async function getPrecursors(): Promise<PrecursorsResponse> {
   return fetchWithAuth("/api/precursors");
 }
 
-export async function getSignals(limit: number = 100): Promise<Signal[]> {
-  return fetchWithAuth(`/api/signals?limit=${limit}`);
+export async function getSignals(limit: number = 50, offset: number = 0): Promise<SignalsResponse> {
+  return fetchWithAuth(`/api/signals?limit=${limit}&offset=${offset}`);
 }
 
-export async function getClosedPositions(limit: number = 100): Promise<ClosedPosition[]> {
-  return fetchWithAuth(`/api/positions/closed?limit=${limit}`);
+export async function getClosedPositions(limit: number = 50, offset: number = 0): Promise<ClosedPositionsResponse> {
+  return fetchWithAuth(`/api/positions/closed?limit=${limit}&offset=${offset}`);
 }
 
-export async function getStats(days: number = 30): Promise<StatsResponse> {
-  return fetchWithAuth(`/api/stats?days=${days}`);
+export async function getStats(period: string = "week"): Promise<StatsResponse> {
+  return fetchWithAuth(`/api/stats?period=${period}`);
 }
