@@ -42,11 +42,11 @@ export function ProgressBar({
   return (
     <div className="w-full">
       {/* プログレスバー */}
-      <div className="relative h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+      <div className="relative h-2 bg-[#21262d] rounded-full overflow-hidden">
         {/* ゼロ位置から現在位置までの塗りつぶし */}
         {currentPnlPct >= 0 ? (
           <div
-            className="absolute h-full bg-green-500"
+            className="absolute h-full bg-[#3fb950]"
             style={{
               left: `${zeroPosition}%`,
               width: `${currentPosition - zeroPosition}%`,
@@ -54,7 +54,7 @@ export function ProgressBar({
           />
         ) : (
           <div
-            className="absolute h-full bg-red-500"
+            className="absolute h-full bg-[#f85149]"
             style={{
               left: `${currentPosition}%`,
               width: `${zeroPosition - currentPosition}%`,
@@ -65,74 +65,74 @@ export function ProgressBar({
         {/* マーカー類 */}
         {/* SL マーカー */}
         <div
-          className="absolute top-0 w-0.5 h-full bg-red-600"
+          className="absolute top-0 w-0.5 h-full bg-[#f85149]"
           style={{ left: `${slPosition}%` }}
           title={`SL: ${slPct}%`}
         />
 
         {/* ゼロ位置 */}
         <div
-          className="absolute top-0 w-0.5 h-full bg-gray-400"
+          className="absolute top-0 w-0.5 h-full bg-[#484f58]"
           style={{ left: `${zeroPosition}%` }}
           title="Entry: 0%"
         />
 
         {/* TP1 マーカー */}
         <div
-          className={`absolute top-0 w-0.5 h-full ${tp1Hit ? "bg-green-600" : "bg-yellow-500"}`}
+          className={`absolute top-0 w-0.5 h-full ${tp1Hit ? "bg-[#3fb950]" : "bg-[#d29922]"}`}
           style={{ left: `${tp1Position}%` }}
           title={`TP1: +${tp1Pct}%`}
         />
 
         {/* トレーリング発動ライン */}
         <div
-          className={`absolute top-0 w-0.5 h-full ${trailingActivated ? "bg-blue-600" : "bg-blue-300"}`}
+          className={`absolute top-0 w-0.5 h-full ${trailingActivated ? "bg-[#58a6ff]" : "bg-[#388bfd]"}`}
           style={{ left: `${trailingPosition}%` }}
           title={`Trailing: +${trailingPct}%`}
         />
 
         {/* TP2 マーカー */}
         <div
-          className={`absolute top-0 w-0.5 h-full ${tp2Hit ? "bg-green-600" : "bg-orange-500"}`}
+          className={`absolute top-0 w-0.5 h-full ${tp2Hit ? "bg-[#3fb950]" : "bg-[#db6d28]"}`}
           style={{ left: `${tp2Position}%` }}
           title={`TP2: +${tp2Pct}%`}
         />
 
         {/* 現在位置のインジケーター */}
         <div
-          className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-2 border-gray-800 shadow-md transition-all duration-300"
-          style={{ left: `calc(${currentPosition}% - 6px)` }}
+          className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white border-2 border-[#30363d] shadow transition-all duration-300"
+          style={{ left: `calc(${currentPosition}% - 5px)` }}
         />
       </div>
 
-      {/* ラベル */}
-      <div className="relative mt-1 text-xs text-muted-foreground">
+      {/* ラベル - プログレスバーから十分な間隔 */}
+      <div className="relative h-4 mt-2">
         <span
-          className="absolute text-red-600"
+          className="absolute text-[10px] text-[#f85149]"
           style={{ left: `${slPosition}%`, transform: "translateX(-50%)" }}
         >
           SL
         </span>
         <span
-          className="absolute"
+          className="absolute text-[10px] text-[#484f58]"
           style={{ left: `${zeroPosition}%`, transform: "translateX(-50%)" }}
         >
           0
         </span>
         <span
-          className={`absolute ${tp1Hit ? "text-green-600 font-medium" : ""}`}
+          className={`absolute text-[10px] ${tp1Hit ? "text-[#3fb950]" : "text-[#8b949e]"}`}
           style={{ left: `${tp1Position}%`, transform: "translateX(-50%)" }}
         >
           TP1
         </span>
         <span
-          className={`absolute ${trailingActivated ? "text-blue-600 font-medium" : "hidden md:inline"}`}
+          className={`absolute text-[10px] ${trailingActivated ? "text-[#58a6ff]" : "text-[#8b949e]"} hidden sm:inline`}
           style={{ left: `${trailingPosition}%`, transform: "translateX(-50%)" }}
         >
           TR
         </span>
         <span
-          className={`absolute ${tp2Hit ? "text-green-600 font-medium" : ""}`}
+          className={`absolute text-[10px] ${tp2Hit ? "text-[#3fb950]" : "text-[#8b949e]"}`}
           style={{ left: `${tp2Position}%`, transform: "translateX(-50%)" }}
         >
           TP2
