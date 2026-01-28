@@ -142,8 +142,9 @@ export function PrecursorList({ data, isLoading, onSelectSymbol }: PrecursorList
         {/* もっと見るボタン */}
         {hasMore && (
           <button
+            type="button"
             onClick={() => setShowAll(!showAll)}
-            className="mt-3 text-sm text-[#58a6ff] hover:underline"
+            className="mt-3 text-sm text-[#58a6ff] hover:underline cursor-pointer"
           >
             {showAll ? "折りたたむ" : `他 ${data.length - MAX_DISPLAY} 件を表示`}
           </button>

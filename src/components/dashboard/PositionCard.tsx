@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -16,7 +17,11 @@ interface PositionCardProps {
   onSelectSymbol?: (symbol: string) => void;
 }
 
+const MAX_DISPLAY = 3;
+
 export function PositionCard({ positions, isLoading, onSelectSymbol }: PositionCardProps) {
+  const [showAll, setShowAll] = useState(false);
+
   if (isLoading) {
     return (
       <Card className="card-shadow border-[#30363d] bg-[#161b22]">
@@ -51,25 +56,29 @@ export function PositionCard({ positions, isLoading, onSelectSymbol }: PositionC
     );
   }
 
+  const displayedPositions = showAll ? positions : positions.slice(0, MAX_DISPLAY);
+  const hasMore = positions.length > MAX_DISPLAY;
+
   return (
     <Card className="card-shadow border-[#30363d] bg-[#161b22]">
-      <CardHeader>
+      <CardHeader className="pb-3">
         <CardTitle className="text-[#e6edf3]">アクティブポジション</CardTitle>
         <CardDescription className="text-[#8b949e]">現在保有中のポジション ({positions.length}件)</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {positions.map((position) => (
+        <div className={`space-y-3 ${showAll ? "max-h-[500px] overflow-y-auto pr-2" : ""}`}>
+          {displayedPositions.map((position) => (
             <div
               key={position.id}
-              className="rounded-lg border border-[#30363d] bg-[#0d1117] p-4"
+              className="rounded-lg border border-[#30363d] bg-[#0d1117] p-3"
             >
               {/* ヘッダー部分 */}
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <button
+                    type="button"
                     onClick={() => onSelectSymbol?.(position.symbol)}
-                    className="font-semibold text-lg text-[#e6edf3] hover:text-[#58a6ff] transition-colors"
+                    className="font-semibold text-[#e6edf3] hover:text-[#58a6ff] transition-colors"
                   >
                     {position.symbol}
                   </button>
@@ -95,14 +104,11 @@ export function PositionCard({ positions, isLoading, onSelectSymbol }: PositionC
                     {position.current_pnl_pct >= 0 ? "+" : ""}
                     {position.current_pnl_pct.toFixed(2)}%
                   </div>
-                  <div className="text-xs text-[#8b949e]">
-                    残り {(position.current_size * 100).toFixed(0)}%
-                  </div>
                 </div>
               </div>
 
               {/* プログレスバー */}
-              <div className="mb-4">
+              <div className="mb-2">
                 <ProgressBar
                   currentPnlPct={position.current_pnl_pct}
                   slPct={position.sl_pct}
@@ -115,86 +121,53 @@ export function PositionCard({ positions, isLoading, onSelectSymbol }: PositionC
                 />
               </div>
 
-              {/* 価格情報 */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm mb-3">
-                <div>
-                  <span className="text-[#8b949e]">Entry:</span>
-                  <span className="ml-1 font-mono text-[#e6edf3]">
-                    ${position.entry_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[#8b949e]">現在:</span>
-                  <span className="ml-1 font-mono text-[#e6edf3]">
-                    ${position.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[#f85149]">SL:</span>
-                  <span className="ml-1 font-mono text-[#e6edf3]">
-                    ${position.sl_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[#8b949e]">最大利益:</span>
-                  <span className="ml-1 font-mono text-[#3fb950]">
-                    +{position.max_profit_pct.toFixed(2)}%
-                  </span>
-                </div>
-              </div>
-
-              {/* TP状況 */}
-              <div className="flex flex-wrap gap-3 text-sm mb-3">
-                <div className="flex items-center gap-1">
-                  <span className={position.tp1_hit ? "text-[#3fb950]" : "text-[#8b949e]"}>
-                    TP1 (+{position.tp1_trigger_pct}%):
-                  </span>
-                  {position.tp1_hit ? (
-                    <span className="text-[#3fb950]">✅ {position.realized_pnl_tp1.toFixed(2)}%</span>
-                  ) : (
-                    <span className="text-[#8b949e]">
-                      ⏳ あと{(position.tp1_trigger_pct - position.current_pnl_pct).toFixed(2)}%
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className={position.tp2_hit ? "text-[#3fb950]" : "text-[#8b949e]"}>
-                    TP2 (+{position.tp2_trigger_pct}%):
-                  </span>
-                  {position.tp2_hit ? (
-                    <span className="text-[#3fb950]">✅ {position.realized_pnl_tp2.toFixed(2)}%</span>
-                  ) : (
-                    <span className="text-[#8b949e]">
-                      ⏳ あと{(position.tp2_trigger_pct - position.current_pnl_pct).toFixed(2)}%
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className={position.trailing_activated ? "text-[#58a6ff]" : "text-[#8b949e]"}>
-                    TR ({position.trailing_stop_pct}%幅):
-                  </span>
-                  {position.trailing_activated ? (
-                    <span className="text-[#58a6ff]">🔄 発動中</span>
-                  ) : (
-                    <span className="text-[#8b949e]">
-                      ⏳ {position.trailing_trigger_pct}%で発動
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* フッター */}
-              <div className="flex items-center justify-between text-xs text-[#8b949e]">
-                <span>
-                  エントリー: {new Date(position.entry_time).toLocaleString("ja-JP")}
+              {/* 価格情報（コンパクト1行） */}
+              <div className="text-xs text-[#8b949e] mb-2">
+                <span>Entry: </span>
+                <span className="font-mono text-[#e6edf3]">
+                  ${position.entry_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
                 </span>
-                <span>
-                  {position.duration_minutes}分経過
+                <span className="mx-2">|</span>
+                <span>現在: </span>
+                <span className="font-mono text-[#e6edf3]">
+                  ${position.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                </span>
+                <span className="mx-2">|</span>
+                <span className="text-[#f85149]">SL: </span>
+                <span className="font-mono text-[#e6edf3]">
+                  ${position.sl_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                </span>
+              </div>
+
+              {/* TP状況（コンパクト表示） */}
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                <span className={position.tp1_hit ? "text-[#3fb950]" : "text-[#8b949e]"}>
+                  TP1: {position.tp1_hit ? `✅ ${position.realized_pnl_tp1.toFixed(1)}%` : `⏳ +${position.tp1_trigger_pct}%`}
+                </span>
+                <span className={position.tp2_hit ? "text-[#3fb950]" : "text-[#8b949e]"}>
+                  TP2: {position.tp2_hit ? `✅ ${position.realized_pnl_tp2.toFixed(1)}%` : `⏳ +${position.tp2_trigger_pct}%`}
+                </span>
+                <span className={position.trailing_activated ? "text-[#58a6ff]" : "text-[#8b949e]"}>
+                  TR: {position.trailing_activated ? "🔄 発動中" : `⏳ +${position.trailing_trigger_pct}%`}
+                </span>
+                <span className="text-[#8b949e] ml-auto">
+                  {position.duration_minutes}分経過 | 残り{(position.current_size * 100).toFixed(0)}%
                 </span>
               </div>
             </div>
           ))}
         </div>
+
+        {/* もっと見るボタン */}
+        {hasMore && (
+          <button
+            type="button"
+            onClick={() => setShowAll(!showAll)}
+            className="mt-3 text-sm text-[#58a6ff] hover:underline cursor-pointer"
+          >
+            {showAll ? "折りたたむ" : `他 ${positions.length - MAX_DISPLAY} 件を表示`}
+          </button>
+        )}
       </CardContent>
     </Card>
   );
