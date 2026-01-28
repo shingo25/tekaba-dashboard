@@ -97,13 +97,13 @@ export function PrecursorList({ data, isLoading, onSelectSymbol }: PrecursorList
                 <div className="flex items-center gap-1">
                   <span className="text-[#8b949e]">FR:</span>
                   <span className="font-mono text-[#e6edf3]">
-                    {(item.conditions.fr_current * 100).toFixed(3)}%
+                    {item.conditions.fr_current.toFixed(3)}%
                   </span>
                   {item.conditions.fr_ok ? (
                     <span className="text-[#3fb950]">✓</span>
                   ) : (
                     <span className="text-[#f0883e]">
-                      →{(item.conditions.fr_required * 100).toFixed(3)}%
+                      →{item.conditions.fr_required.toFixed(3)}%
                     </span>
                   )}
                 </div>
