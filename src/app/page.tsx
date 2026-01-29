@@ -6,7 +6,7 @@ import { PositionCard } from "@/components/dashboard/PositionCard";
 import { PrecursorList } from "@/components/dashboard/PrecursorList";
 import { TradingViewWidget } from "@/components/TradingViewWidget";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { SymbolData, Position, PrecursorData } from "@/lib/api";
+import type { SymbolData, Position, PrecursorData, EndedPrecursor } from "@/lib/api";
 import { useWebSocket } from "@/hooks/useWebSocket";
 
 const REFRESH_INTERVAL = 10000; // 10 seconds (fallback polling)
@@ -15,6 +15,7 @@ export default function DashboardPage() {
   const [top50, setTop50] = useState<SymbolData[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
   const [precursors, setPrecursors] = useState<PrecursorData[]>([]);
+  const [endedPrecursors, setEndedPrecursors] = useState<EndedPrecursor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
@@ -23,10 +24,11 @@ export default function DashboardPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [top50Res, positionsRes, precursorsRes] = await Promise.all([
+      const [top50Res, positionsRes, precursorsRes, endedRes] = await Promise.all([
         fetch("/api/proxy/top50"),
         fetch("/api/proxy/positions"),
         fetch("/api/proxy/precursors"),
+        fetch("/api/proxy/precursors/ended"),
       ]);
 
       if (!top50Res.ok || !positionsRes.ok || !precursorsRes.ok) {
@@ -43,6 +45,12 @@ export default function DashboardPage() {
       setTop50(top50Data.data || []);
       setPositions(positionsData.data || []);
       setPrecursors(precursorsData.data || []);
+
+      // 前兆終了履歴（エラーでも無視）
+      if (endedRes.ok) {
+        const endedData = await endedRes.json();
+        setEndedPrecursors(endedData.data || []);
+      }
       setLastUpdate(new Date());
       setError(null);
     } catch (err) {
@@ -105,6 +113,7 @@ export default function DashboardPage() {
         <MobileTabView
           positions={positions}
           precursors={precursors}
+          endedPrecursors={endedPrecursors}
           top50={top50}
           isLoading={isLoading}
           onSelectSymbol={handleSelectSymbol}
@@ -143,6 +152,7 @@ export default function DashboardPage() {
           ) : (
             <PrecursorList
               data={precursors}
+              endedData={endedPrecursors}
               isLoading={isLoading}
               onSelectSymbol={handleSelectSymbol}
             />
@@ -173,12 +183,14 @@ export default function DashboardPage() {
 function MobileTabView({
   positions,
   precursors,
+  endedPrecursors,
   top50,
   isLoading,
   onSelectSymbol,
 }: {
   positions: Position[];
   precursors: PrecursorData[];
+  endedPrecursors: EndedPrecursor[];
   top50: SymbolData[];
   isLoading: boolean;
   onSelectSymbol: (symbol: string) => void;
@@ -232,6 +244,7 @@ function MobileTabView({
       {activeTab === "precursors" && (
         <PrecursorList
           data={precursors}
+          endedData={endedPrecursors}
           isLoading={isLoading}
           onSelectSymbol={onSelectSymbol}
         />

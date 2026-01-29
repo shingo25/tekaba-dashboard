@@ -55,6 +55,21 @@ export interface PrecursorsResponse {
   data: PrecursorData[];
 }
 
+export interface EndedPrecursor {
+  symbol: string;
+  direction: string;
+  pattern: string;
+  started_at: string;
+  ended_at: string;
+  end_reason: "signal" | "fr_lost" | "div_lost" | "oi_lost" | "condition_lost";
+  duration_minutes: number;
+}
+
+export interface EndedPrecursorsResponse {
+  count: number;
+  data: EndedPrecursor[];
+}
+
 // ===========================================
 // ポジション
 // ===========================================
