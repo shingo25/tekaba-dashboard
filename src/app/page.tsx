@@ -7,8 +7,9 @@ import { PrecursorList } from "@/components/dashboard/PrecursorList";
 import { TradingViewWidget } from "@/components/TradingViewWidget";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { SymbolData, Position, PrecursorData } from "@/lib/api";
+import { useWebSocket } from "@/hooks/useWebSocket";
 
-const REFRESH_INTERVAL = 10000; // 10 seconds
+const REFRESH_INTERVAL = 10000; // 10 seconds (fallback polling)
 
 export default function DashboardPage() {
   const [top50, setTop50] = useState<SymbolData[]>([]);
@@ -52,6 +53,11 @@ export default function DashboardPage() {
     }
   }, []);
 
+  // WebSocket: イベント受信時にデータ再取得
+  const { isConnected: wsConnected } = useWebSocket({
+    onAnyEvent: fetchData,
+  });
+
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, REFRESH_INTERVAL);
@@ -76,6 +82,12 @@ export default function DashboardPage() {
             <span className={`w-2 h-2 rounded-full ${error ? "bg-red-500" : "bg-green-500"}`} />
             {error ? "エラー" : "接続中"}
           </span>
+          {wsConnected && (
+            <span className="flex items-center gap-1 text-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+              WS
+            </span>
+          )}
         </div>
       </div>
 
