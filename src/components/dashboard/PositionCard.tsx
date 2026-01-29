@@ -119,6 +119,12 @@ export function PositionCard({ positions, isLoading, onSelectSymbol }: PositionC
                 />
               </div>
 
+              {/* エントリー時刻 */}
+              <div className="text-xs text-[#484f58]">
+                エントリー: {new Date(position.entry_time).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}
+                {" "}({new Date(position.entry_time).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })})
+              </div>
+
               {/* 価格情報 */}
               <div className="text-sm text-[#8b949e]">
                 <span>Entry: </span>

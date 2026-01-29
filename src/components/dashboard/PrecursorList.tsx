@@ -88,7 +88,19 @@ export function PrecursorList({ data, isLoading, onSelectSymbol }: PrecursorList
                   >
                     {item.direction}
                   </span>
+                  <span className="text-xs text-[#8b949e]">
+                    {item.pattern_a_precursor && item.pattern_b_precursor
+                      ? "A+B候補"
+                      : item.pattern_a_precursor
+                      ? "A候補"
+                      : item.pattern_b_precursor
+                      ? "B候補"
+                      : ""}
+                  </span>
                 </div>
+                <span className="text-xs text-[#484f58]">
+                  {new Date(item.detected_at).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}
+                </span>
               </div>
 
               {/* 条件状況（コンパクト表示） */}

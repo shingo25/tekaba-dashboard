@@ -46,6 +46,8 @@ export interface PrecursorData {
   conditions: ConditionDetail;
   direction: string;
   missing: string[];
+  pattern_a_precursor: boolean;
+  pattern_b_precursor: boolean;
 }
 
 export interface PrecursorsResponse {
