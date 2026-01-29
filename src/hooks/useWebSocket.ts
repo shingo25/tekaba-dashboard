@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { WebSocketManager, WebSocketMessage } from "@/lib/websocket";
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000/api/ws";
@@ -38,6 +38,7 @@ export function useWebSocket({
   onAnyEvent,
 }: UseWebSocketOptions = {}) {
   const managerRef = useRef<WebSocketManager | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
   // コールバックをrefに保持して再レンダリング時の再接続を防ぐ
   const callbacksRef = useRef({ onSignal, onPositionUpdate, onPrecursor, onAnyEvent });
@@ -66,6 +67,8 @@ export function useWebSocket({
 
     const manager = new WebSocketManager(WS_URL, API_KEY);
     managerRef.current = manager;
+
+    const unsubConnection = manager.onConnectionChange(setIsConnected);
 
     const unsubscribe = manager.subscribe((message: WebSocketMessage) => {
       const cb = callbacksRef.current;
@@ -110,11 +113,10 @@ export function useWebSocket({
 
     return () => {
       unsubscribe();
+      unsubConnection();
       manager.disconnect();
     };
   }, [showNotification]);
 
-  return {
-    isConnected: managerRef.current?.isConnected ?? false,
-  };
+  return { isConnected };
 }

@@ -1,4 +1,5 @@
 type MessageHandler = (message: WebSocketMessage) => void;
+type ConnectionHandler = (connected: boolean) => void;
 
 export interface WebSocketMessage {
   type: "signal" | "position_update" | "precursor" | "auth_success" | "error" | "pong";
@@ -12,6 +13,7 @@ export class WebSocketManager {
   private url: string;
   private apiKey: string;
   private handlers: Set<MessageHandler> = new Set();
+  private connectionHandlers: Set<ConnectionHandler> = new Set();
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private pingTimer: ReturnType<typeof setInterval> | null = null;
   private reconnectDelay = 3000;
@@ -57,8 +59,26 @@ export class WebSocketManager {
     };
   }
 
+  onConnectionChange(handler: ConnectionHandler): () => void {
+    this.connectionHandlers.add(handler);
+    return () => {
+      this.connectionHandlers.delete(handler);
+    };
+  }
+
   get isConnected(): boolean {
     return this.ws?.readyState === WebSocket.OPEN && this.authenticated;
+  }
+
+  private notifyConnectionChange(): void {
+    const connected = this.isConnected;
+    this.connectionHandlers.forEach((handler) => {
+      try {
+        handler(connected);
+      } catch {
+        // ignore
+      }
+    });
   }
 
   private onOpen(): void {
@@ -75,6 +95,7 @@ export class WebSocketManager {
         this.authenticated = true;
         console.log("[WS] Authenticated");
         this.startPing();
+        this.notifyConnectionChange();
         return;
       }
 
@@ -104,6 +125,7 @@ export class WebSocketManager {
     console.log("[WS] Disconnected");
     this.authenticated = false;
     this.stopPing();
+    this.notifyConnectionChange();
     if (this.shouldReconnect) {
       this.scheduleReconnect();
     }
