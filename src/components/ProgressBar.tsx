@@ -9,6 +9,7 @@ interface ProgressBarProps {
   tp1Hit: boolean;
   tp2Hit: boolean;
   trailingActivated: boolean;
+  compact?: boolean;
 }
 
 export function ProgressBar({
@@ -20,6 +21,7 @@ export function ProgressBar({
   tp1Hit,
   tp2Hit,
   trailingActivated,
+  compact = false,
 }: ProgressBarProps) {
   // 表示範囲を計算（SL〜TP2+5%）
   const minRange = slPct - 2;
@@ -39,10 +41,14 @@ export function ProgressBar({
   const trailingPosition = getPosition(trailingPct);
   const zeroPosition = getPosition(0);
 
+  const barHeight = compact ? "h-1.5" : "h-2";
+  const dotSize = compact ? "w-2 h-2" : "w-2.5 h-2.5";
+  const dotOffset = compact ? "4px" : "5px";
+
   return (
     <div className="w-full">
       {/* プログレスバー */}
-      <div className="relative h-2 bg-[#21262d] rounded-full overflow-hidden">
+      <div className={`relative ${barHeight} bg-[#21262d] rounded-full overflow-hidden`}>
         {/* ゼロ位置から現在位置までの塗りつぶし */}
         {currentPnlPct >= 0 ? (
           <div
@@ -63,35 +69,26 @@ export function ProgressBar({
         )}
 
         {/* マーカー類 */}
-        {/* SL マーカー */}
         <div
           className="absolute top-0 w-0.5 h-full bg-[#f85149]"
           style={{ left: `${slPosition}%` }}
           title={`SL: ${slPct}%`}
         />
-
-        {/* ゼロ位置 */}
         <div
           className="absolute top-0 w-0.5 h-full bg-[#484f58]"
           style={{ left: `${zeroPosition}%` }}
           title="Entry: 0%"
         />
-
-        {/* TP1 マーカー */}
         <div
           className={`absolute top-0 w-0.5 h-full ${tp1Hit ? "bg-[#3fb950]" : "bg-[#d29922]"}`}
           style={{ left: `${tp1Position}%` }}
           title={`TP1: +${tp1Pct}%`}
         />
-
-        {/* トレーリング発動ライン */}
         <div
           className={`absolute top-0 w-0.5 h-full ${trailingActivated ? "bg-[#58a6ff]" : "bg-[#388bfd]"}`}
           style={{ left: `${trailingPosition}%` }}
           title={`Trailing: +${trailingPct}%`}
         />
-
-        {/* TP2 マーカー */}
         <div
           className={`absolute top-0 w-0.5 h-full ${tp2Hit ? "bg-[#3fb950]" : "bg-[#db6d28]"}`}
           style={{ left: `${tp2Position}%` }}
@@ -100,44 +97,46 @@ export function ProgressBar({
 
         {/* 現在位置のインジケーター */}
         <div
-          className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white border-2 border-[#30363d] shadow transition-all duration-300"
-          style={{ left: `calc(${currentPosition}% - 5px)` }}
+          className={`absolute top-1/2 -translate-y-1/2 ${dotSize} rounded-full bg-white border-2 border-[#30363d] shadow transition-all duration-300`}
+          style={{ left: `calc(${currentPosition}% - ${dotOffset})` }}
         />
       </div>
 
-      {/* ラベル - プログレスバーから十分な間隔 */}
-      <div className="relative h-4 mt-2">
-        <span
-          className="absolute text-[10px] text-[#f85149]"
-          style={{ left: `${slPosition}%`, transform: "translateX(-50%)" }}
-        >
-          SL
-        </span>
-        <span
-          className="absolute text-[10px] text-[#484f58]"
-          style={{ left: `${zeroPosition}%`, transform: "translateX(-50%)" }}
-        >
-          0
-        </span>
-        <span
-          className={`absolute text-[10px] ${tp1Hit ? "text-[#3fb950]" : "text-[#8b949e]"}`}
-          style={{ left: `${tp1Position}%`, transform: "translateX(-50%)" }}
-        >
-          TP1
-        </span>
-        <span
-          className={`absolute text-[10px] ${trailingActivated ? "text-[#58a6ff]" : "text-[#8b949e]"} hidden sm:inline`}
-          style={{ left: `${trailingPosition}%`, transform: "translateX(-50%)" }}
-        >
-          TR
-        </span>
-        <span
-          className={`absolute text-[10px] ${tp2Hit ? "text-[#3fb950]" : "text-[#8b949e]"}`}
-          style={{ left: `${tp2Position}%`, transform: "translateX(-50%)" }}
-        >
-          TP2
-        </span>
-      </div>
+      {/* ラベル（compactモードでは非表示） */}
+      {!compact && (
+        <div className="relative h-4 mt-2">
+          <span
+            className="absolute text-[10px] text-[#f85149]"
+            style={{ left: `${slPosition}%`, transform: "translateX(-50%)" }}
+          >
+            SL
+          </span>
+          <span
+            className="absolute text-[10px] text-[#484f58]"
+            style={{ left: `${zeroPosition}%`, transform: "translateX(-50%)" }}
+          >
+            0
+          </span>
+          <span
+            className={`absolute text-[10px] ${tp1Hit ? "text-[#3fb950]" : "text-[#8b949e]"}`}
+            style={{ left: `${tp1Position}%`, transform: "translateX(-50%)" }}
+          >
+            TP1
+          </span>
+          <span
+            className={`absolute text-[10px] ${trailingActivated ? "text-[#58a6ff]" : "text-[#8b949e]"} hidden sm:inline`}
+            style={{ left: `${trailingPosition}%`, transform: "translateX(-50%)" }}
+          >
+            TR
+          </span>
+          <span
+            className={`absolute text-[10px] ${tp2Hit ? "text-[#3fb950]" : "text-[#8b949e]"}`}
+            style={{ left: `${tp2Position}%`, transform: "translateX(-50%)" }}
+          >
+            TP2
+          </span>
+        </div>
+      )}
     </div>
   );
 }
