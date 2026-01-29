@@ -6,7 +6,7 @@ import { PositionCard } from "@/components/dashboard/PositionCard";
 import { PrecursorList } from "@/components/dashboard/PrecursorList";
 import { TradingViewWidget } from "@/components/TradingViewWidget";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { SymbolData, Position, PrecursorData, EndedPrecursor } from "@/lib/api";
+import type { SymbolData, Position, PrecursorData, EndedPrecursor, SkippedSignal } from "@/lib/api";
 import { useWebSocket } from "@/hooks/useWebSocket";
 
 const REFRESH_INTERVAL = 10000; // 10 seconds (fallback polling)
@@ -16,6 +16,7 @@ export default function DashboardPage() {
   const [positions, setPositions] = useState<Position[]>([]);
   const [precursors, setPrecursors] = useState<PrecursorData[]>([]);
   const [endedPrecursors, setEndedPrecursors] = useState<EndedPrecursor[]>([]);
+  const [skippedSignals, setSkippedSignals] = useState<SkippedSignal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
@@ -24,11 +25,12 @@ export default function DashboardPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [top50Res, positionsRes, precursorsRes, endedRes] = await Promise.all([
+      const [top50Res, positionsRes, precursorsRes, endedRes, skippedRes] = await Promise.all([
         fetch("/api/proxy/top50"),
         fetch("/api/proxy/positions"),
         fetch("/api/proxy/precursors"),
         fetch("/api/proxy/precursors/ended"),
+        fetch("/api/proxy/signals/skipped"),
       ]);
 
       if (!top50Res.ok || !positionsRes.ok || !precursorsRes.ok) {
@@ -50,6 +52,12 @@ export default function DashboardPage() {
       if (endedRes.ok) {
         const endedData = await endedRes.json();
         setEndedPrecursors(endedData.data || []);
+      }
+
+      // スキップされたシグナル（エラーでも無視）
+      if (skippedRes.ok) {
+        const skippedData = await skippedRes.json();
+        setSkippedSignals(skippedData.data || []);
       }
       setLastUpdate(new Date());
       setError(null);
@@ -114,6 +122,7 @@ export default function DashboardPage() {
           positions={positions}
           precursors={precursors}
           endedPrecursors={endedPrecursors}
+          skippedSignals={skippedSignals}
           top50={top50}
           isLoading={isLoading}
           onSelectSymbol={handleSelectSymbol}
@@ -153,6 +162,7 @@ export default function DashboardPage() {
             <PrecursorList
               data={precursors}
               endedData={endedPrecursors}
+              skippedSignals={skippedSignals}
               isLoading={isLoading}
               onSelectSymbol={handleSelectSymbol}
             />
@@ -163,6 +173,7 @@ export default function DashboardPage() {
         {showChart && precursors.length > 0 && (
           <PrecursorList
             data={precursors}
+            skippedSignals={skippedSignals}
             isLoading={isLoading}
             onSelectSymbol={handleSelectSymbol}
           />
@@ -184,6 +195,7 @@ function MobileTabView({
   positions,
   precursors,
   endedPrecursors,
+  skippedSignals,
   top50,
   isLoading,
   onSelectSymbol,
@@ -191,6 +203,7 @@ function MobileTabView({
   positions: Position[];
   precursors: PrecursorData[];
   endedPrecursors: EndedPrecursor[];
+  skippedSignals: SkippedSignal[];
   top50: SymbolData[];
   isLoading: boolean;
   onSelectSymbol: (symbol: string) => void;
@@ -245,6 +258,7 @@ function MobileTabView({
         <PrecursorList
           data={precursors}
           endedData={endedPrecursors}
+          skippedSignals={skippedSignals}
           isLoading={isLoading}
           onSelectSymbol={onSelectSymbol}
         />

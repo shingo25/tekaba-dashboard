@@ -71,6 +71,25 @@ export interface EndedPrecursorsResponse {
 }
 
 // ===========================================
+// スキップされたシグナル
+// ===========================================
+export interface SkippedSignal {
+  symbol: string;
+  direction: "LONG" | "SHORT";
+  pattern: string;
+  price: number;
+  volume_24h: number;
+  min_volume: number;
+  reason: string;
+  timestamp: string;
+}
+
+export interface SkippedSignalsResponse {
+  count: number;
+  data: SkippedSignal[];
+}
+
+// ===========================================
 // ポジション
 // ===========================================
 export interface Position {
@@ -247,4 +266,8 @@ export async function getClosedPositions(limit: number = 50, offset: number = 0)
 
 export async function getStats(period: string = "week"): Promise<StatsResponse> {
   return fetchWithAuth(`/api/stats?period=${period}`);
+}
+
+export async function getSkippedSignals(): Promise<SkippedSignalsResponse> {
+  return fetchWithAuth("/api/signals/skipped");
 }

@@ -42,7 +42,10 @@ export function useWebSocket({
 
   // コールバックをrefに保持して再レンダリング時の再接続を防ぐ
   const callbacksRef = useRef({ onSignal, onPositionUpdate, onPrecursor, onAnyEvent });
-  callbacksRef.current = { onSignal, onPositionUpdate, onPrecursor, onAnyEvent };
+
+  useEffect(() => {
+    callbacksRef.current = { onSignal, onPositionUpdate, onPrecursor, onAnyEvent };
+  });
 
   const showNotification = useCallback((title: string, body: string) => {
     if (typeof window === "undefined") return;
