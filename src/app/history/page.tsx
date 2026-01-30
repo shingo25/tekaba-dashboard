@@ -308,7 +308,7 @@ export default function HistoryPage() {
                           </td>
                           <td className="py-2 px-2 text-right font-mono hidden md:table-cell">
                             {signal.fr_at_signal != null
-                              ? `${(signal.fr_at_signal * 100).toFixed(3)}%`
+                              ? `${signal.fr_at_signal.toFixed(3)}%`
                               : "-"}
                           </td>
                         </tr>
