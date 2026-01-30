@@ -190,7 +190,7 @@ export function PrecursorList({ data, endedData = [], skippedSignals = [], isLoa
           <h4 className="flex items-center gap-2 text-sm font-medium text-[#e6edf3] mb-2">
             <span>⚠️</span>
             <span>シグナル発生（出来高待ち）</span>
-            <span className="text-[#484f58]">({skippedSignals.length}件)</span>
+            <span className="text-[#484f58]">({skippedSignals.length}銘柄)</span>
           </h4>
 
           {skippedSignals.length === 0 ? (
@@ -199,9 +199,9 @@ export function PrecursorList({ data, endedData = [], skippedSignals = [], isLoa
             </div>
           ) : (
             <div className="space-y-2">
-              {skippedSignals.map((s, i) => (
+              {skippedSignals.map((s) => (
                 <div
-                  key={`${s.symbol}-${s.timestamp}-${i}`}
+                  key={s.symbol}
                   className="rounded-lg border border-yellow-700/30 bg-yellow-900/10 p-3"
                 >
                   <div className="flex items-center justify-between">
@@ -216,9 +216,16 @@ export function PrecursorList({ data, endedData = [], skippedSignals = [], isLoa
                       </span>
                       <span className="text-xs text-[#8b949e]">{s.pattern}</span>
                     </div>
-                    <span className="text-xs text-[#484f58]">
-                      {formatTime(s.timestamp)}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {s.signal_count > 1 && (
+                        <span className="text-xs text-[#f0883e]">
+                          🔥×{s.signal_count}回
+                        </span>
+                      )}
+                      <span className="text-xs text-[#484f58]">
+                        初回 {formatTime(s.first_skipped_at)}
+                      </span>
+                    </div>
                   </div>
                   <div className="text-xs text-[#d29922] mt-1">
                     出来高: {formatVolume(s.volume_24h)} / 必要: {formatVolume(s.min_volume)}

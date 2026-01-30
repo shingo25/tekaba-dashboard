@@ -77,15 +77,16 @@ export interface SkippedSignal {
   symbol: string;
   direction: "LONG" | "SHORT";
   pattern: string;
-  price: number;
   volume_24h: number;
   min_volume: number;
-  reason: string;
-  timestamp: string;
+  signal_count: number;
+  first_skipped_at: string;
+  latest_skipped_at: string;
 }
 
 export interface SkippedSignalsResponse {
   count: number;
+  total_signals: number;
   data: SkippedSignal[];
 }
 
