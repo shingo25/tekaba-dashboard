@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -9,7 +9,89 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+} from "recharts";
 import type { StatsResponse } from "@/lib/api";
+
+function PnLChart({ daily }: { daily: { date: string; trades: number; pnl: number }[] }) {
+  const chartData = useMemo(() => {
+    return daily.reduce<{ date: string; pnl: number; cumulative: number }[]>(
+      (acc, d) => {
+        const prev = acc.length > 0 ? acc[acc.length - 1].cumulative : 0;
+        acc.push({
+          date: d.date.slice(5),
+          pnl: Number(d.pnl.toFixed(2)),
+          cumulative: Number((prev + d.pnl).toFixed(2)),
+        });
+        return acc;
+      },
+      []
+    );
+  }, [daily]);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>PnL推移</CardTitle>
+        <CardDescription>日次PnL（紫）と累積PnL（緑）</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#30363d" />
+            <XAxis
+              dataKey="date"
+              stroke="#8b949e"
+              tick={{ fill: "#8b949e", fontSize: 12 }}
+            />
+            <YAxis
+              stroke="#8b949e"
+              tick={{ fill: "#8b949e", fontSize: 12 }}
+              tickFormatter={(v) => `${v}%`}
+            />
+            <ReferenceLine y={0} stroke="#484f58" />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#161b22",
+                border: "1px solid #30363d",
+                borderRadius: "8px",
+              }}
+              labelStyle={{ color: "#e6edf3" }}
+              formatter={(value: number, name: string) => [
+                `${value.toFixed(2)}%`,
+                name === "cumulative" ? "累積PnL" : "日次PnL",
+              ]}
+            />
+            <Line
+              type="monotone"
+              dataKey="cumulative"
+              stroke="#3fb950"
+              strokeWidth={2}
+              dot={{ fill: "#3fb950", strokeWidth: 2, r: 3 }}
+              name="cumulative"
+            />
+            <Line
+              type="monotone"
+              dataKey="pnl"
+              stroke="#8b5cf6"
+              strokeWidth={2}
+              dot={{ fill: "#8b5cf6", strokeWidth: 2, r: 3 }}
+              name="pnl"
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function StatsPage() {
   const [stats, setStats] = useState<StatsResponse | null>(null);
@@ -261,6 +343,11 @@ export default function StatsPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* PnL推移チャート */}
+          {stats.daily.length > 0 && (
+            <PnLChart daily={stats.daily} />
+          )}
 
           {/* 日別統計 */}
           <Card>
