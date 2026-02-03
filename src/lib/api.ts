@@ -272,3 +272,91 @@ export async function getStats(period: string = "week"): Promise<StatsResponse> 
 export async function getSkippedSignals(): Promise<SkippedSignalsResponse> {
   return fetchWithAuth("/api/signals/skipped");
 }
+
+// ===========================================
+// Phase 6C: 新規API
+// ===========================================
+
+export interface ActivePosition {
+  symbol: string;
+  side: string;
+  entry_price: number;
+  current_price: number;
+  quantity: number | null;
+  unrealized_pnl_pct: number;
+  unrealized_pnl_usd: number;
+  leverage: number;
+  margin_used: number;
+  tp1_triggered: boolean;
+  tp2_triggered: boolean;
+  trailing_activated: boolean;
+  sl_price: number;
+  created_at: string;
+}
+
+export interface ActivePositionsResponse {
+  count: number;
+  data: ActivePosition[];
+}
+
+export interface TradeStatsSummary {
+  period: string;
+  total_trades: number;
+  wins: number;
+  losses: number;
+  win_rate: number;
+  total_pnl_pct: number;
+  total_pnl_usd: number;
+  avg_win_pct: number;
+  avg_loss_pct: number;
+  profit_factor: number;
+  max_drawdown_pct: number;
+  max_consecutive_losses: number;
+  best_trade: { symbol: string; pnl_pct: number } | null;
+  worst_trade: { symbol: string; pnl_pct: number } | null;
+}
+
+export interface DailyPnlData {
+  date: string;
+  pnl_pct: number;
+  trades: number;
+}
+
+export interface AccountBalance {
+  total_balance: number | null;
+  available_balance: number | null;
+  unrealized_pnl: number;
+  margin_used: number;
+  daily_loss_pct: number;
+  daily_loss_limit_pct: number;
+  trade_mode: string;
+  is_trading_paused: boolean;
+}
+
+export interface TradeModeResponse {
+  success: boolean;
+  mode: string;
+}
+
+export async function getActivePositions(): Promise<ActivePositionsResponse> {
+  return fetchWithAuth("/api/positions/active");
+}
+
+export async function getTradeStatsSummary(period: string = "7d"): Promise<TradeStatsSummary> {
+  return fetchWithAuth(`/api/stats/summary?period=${period}`);
+}
+
+export async function getDailyPnl(days: number = 30): Promise<DailyPnlData[]> {
+  return fetchWithAuth(`/api/stats/daily-pnl?days=${days}`);
+}
+
+export async function getAccountBalance(): Promise<AccountBalance> {
+  return fetchWithAuth("/api/account/balance");
+}
+
+export async function setTradeMode(mode: string): Promise<TradeModeResponse> {
+  return fetchWithAuth("/api/settings/trade-mode", {
+    method: "POST",
+    body: JSON.stringify({ mode }),
+  });
+}

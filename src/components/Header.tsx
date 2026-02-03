@@ -28,6 +28,14 @@ export function Header() {
               ダッシュボード
             </Link>
             <Link
+              href="/positions"
+              className={`transition-colors hover:text-[#e6edf3] ${
+                pathname === "/positions" ? "text-[#e6edf3]" : "text-[#8b949e]"
+              }`}
+            >
+              ポジション
+            </Link>
+            <Link
               href="/history"
               className={`transition-colors hover:text-[#e6edf3] ${
                 pathname === "/history" ? "text-[#e6edf3]" : "text-[#8b949e]"
